@@ -29,8 +29,36 @@ class Level:
         self.criteria=level_criteria
         self.level_type=level_type
 
-#class LevelINTERACTION:
-#    def __init__(self,):
+class LevelInteraction:
+    def __init__(self,level_id,date,session,price_movement):
+        self.level_id=level_id
+        self.date_price_reach=date
+        self.session=session
+        self.interaction_on_level=price_movement
+
+class EntryOpportunity:
+    def __init__(self,level_interaction_id, valid_entry,trade_direction,daily_bias,
+                 trade_action, confirmation_pattern, not_taken_reason):
+
+        self.level_interaction_id=level_interaction_id
+        self.valid_entry= valid_entry
+        self.trade_direction=trade_direction
+        self.daily_bias= daily_bias
+        self.trade_action=trade_action
+        self.confirmation_pattern=confirmation_pattern
+        self.not_taken_reason=not_taken_reason
+
+class  TRADE:
+    def __init__(self,date,time,time_frame,trade_ratio):
+        self.entry_date=date
+        self.time=time
+        self.confirmation_timeframe=time_frame
+        self.trade_ratio=trade_ratio
+
+#class TradeChecks:
+
+
+
 
 
 
