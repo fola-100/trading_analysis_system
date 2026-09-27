@@ -466,16 +466,6 @@ def get_trade_data():
 
 
 
-
-
-
-
-
-
-
-
-
-
 def get_lifecycle_action(setup_id, current_stage, next_stage):
     print(f'Setup_id: {setup_id}')
     print(f'Current stage:{current_stage}')

@@ -136,9 +136,6 @@ def create_new_level(setup_id):
 
     return None
 
-def test():
-
-
 
 def continue_lifecycle(setup_id, level_id, next_stage):
     if next_stage == SystemState.LEVEL:
