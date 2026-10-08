@@ -23,7 +23,7 @@ def get_user_action():
         else:
             print("invalid choice")
 
-
+# DATA COLLECTION
 def get_setup_data():
    while True:
        print("\n CHOOSE STRATEGY BEEN USED ")
@@ -40,26 +40,29 @@ def get_setup_data():
          break
        else:
          print("invalid choice. Please enter 1 or 2.")
-
-   market_pair= input("Enter market pair:")
+   while True:
+      market_pair= input("\nEnter market pair:").lower()
+      if market_pair:
+          break
+      print("Enter market pair been traded")
 
    while True:
-       long_htf_direction= input("Enter long term HTF direction(long/short):")
-       short_htf_direction=input("Enter short term HTF direction(long/short):")
+       long_htf_direction= input("\nEnter long term HTF direction(long/short):").lower().strip()
+       short_htf_direction=input("\nEnter short term HTF direction(long/short):").lower().strip()
        if long_htf_direction not in ["long","short"] or short_htf_direction not in ["long","short"]:
-         print("HTF entry should  up or down ")
+         print("HTF entry should  long or short ")
        else:
            break
 
    while True:
-       mkt_condition= input("Enter market condition(ranging/trending/transitioning):")
+       mkt_condition= input("\nEnter market condition(ranging/trending/transitioning):").strip().lower()
        if mkt_condition not in ["ranging","trending","transitioning"]:
-         print("market condition must be ranging, trending, or transitioning")
+         print("\nmarket condition must be ranging, trending, or transitioning")
        else:
            break
 
    while True:
-      candle_bias=input("Enter speculated next three candle (bullish/bearish/unsure):")
+      candle_bias=input("\nEnter speculated next three candle (bullish/bearish/unsure):").lower().strip()
       if candle_bias not in ["bullish","bearish","unsure"]:
         print("Candle bias must be bullish, bearish or unsure")
       else:
@@ -88,7 +91,7 @@ def get_level_data():
         print("1. Asian session")
         print("2. London session")
         print("3.New York session")
-        print("Sydney session")
+        print("4.Sydney session")
 
         session_choice=input("Enter choice:").strip()
 
@@ -127,13 +130,16 @@ def get_level_data():
             timeframe= "1H"
             break
         elif timeframe_choice=="3":
-            timeframe="3"
+            timeframe="30MIN"
             break
         elif timeframe_choice=="4":
-            timeframe="Daily"
+            timeframe="4hr"
             break
+        elif timeframe_choice== "5":
+             timeframe="Daily"
+             break
         else:
-            print("Invalid choice. PLS enter 1,2,3,or 4")
+            print("Invalid choice. Please enter from 1,2,3,or 5")
 
    #GET LEVEL CRITERIA
     valid_criteria = {
@@ -218,8 +224,8 @@ def get_level_interaction():
 
     date=get_date()
 
-    print("Select one of session from the option available")
-    sessions= ["Asian", "London","New York" "Sydney",]
+    print("\nSelect session when price came to level in the available options")
+    sessions= ["Asian", "London","New York","Sydney"]
 
     for number,sessions in enumerate(sessions, start=1):
         print(f'{number},{sessions}')
@@ -238,14 +244,14 @@ def get_level_interaction():
         except ValueError:
             print("invalid input")
 
-    print("Select price action movement when approaching  level")
+    print("\nSelect price action movement when approaching  level")
     price_movements=["enter level","touch","break","did not reach"]
 
     for number, movement in enumerate(price_movements, start=1):
         print(f'{number}, {movement}')
 
     while True:
-        responses=input("Enter your choice").strip()
+        responses=input("Enter your choice:").strip()
         try:
           if responses.isdigit():
             choice=int(responses)
@@ -285,7 +291,7 @@ def get_entry_opportunity_data():
         print("2. Bearish")
         print("3. Unclear")
 
-        response=input("Select an option").strip()
+        response=input("Select an option:").strip()
 
         if response== "1":
             daily_bias= "BULLISH"
@@ -316,39 +322,52 @@ def get_entry_opportunity_data():
         else:
             print("invalid choice. Please select 1 or 2.")
 
-    confirmation_pattern= None
+    confirmation_patterns= None
     not_taken_reason= None
 
     if trade_action == "TAKEN":
-        patterns=["B0S","Strong bullish candle", "Liquidity sweep", "Order block","CHoCH",
-                  "Rejection","Depletion","No confirmation use", "Failed Bos"]
+        patterns=[ "BOS", "Strong bullish candle",
+                   "Liquidity sweep", "Order block",
+                   "CHoCH", "Rejection", "Depletion",
+                   "No confirmation use", "Failed BOS" ]
 
-        print("\n What pattern was the trading/entry decision base on?:")
+        print("\nWhat pattern was the trading/entry decision based on?")
 
-        for number,pattern in enumerate(patterns, start=1):
-            print(f'{number}) {pattern}')
+        # Display the available patterns
+        for number, pattern in enumerate(patterns, start=1):
+            print(f"{number}. {pattern}")
 
         while True:
+            user_response = input("Select pattern(s). Separate multiple choices with commas: ")
+
             try:
-              response= int(input("Select a pattern:"))
+                selected_choices=[ int(choice.strip()) for choice in user_response.split(",") ]
 
-              if 1 <=response<=len(patterns):
-                  confirmation_pattern=patterns[response -1]
-                  break
+                # Check that at least one choice was entered
+                if not selected_choices:
+                  print("Invalid choice. Please select at least one choice.")
+                  continue
 
-              print("Invalid choice. Please select a valid option.")
+                # Check that every number is a valid option
+                if not all( 1 <= choice <= len(patterns) for choice in selected_choices ):
+                    print("Input entered is not among the options.")
+                    continue
+
+
+                confirmation_patterns = [patterns[choice - 1] for choice in selected_choices]
+
+                break
 
             except ValueError:
-                print("invalid input.please enter a number.")
+                print("Selected input must be a number.")
 
-#        if trade was not taken
     else:
-        reasons=["No confirmation","Missed entry", "Hesitation", "Fear","Didn't see  it",
-                 "Rule violation prevented entry", "Other"]
+        reasons_list=["No confirmation","Missed entry", "Hesitation", "Fear","Didn't see  it",
+                 "Rule violation prevented entry","confirmation unclear", "Other"]
 
         print("\n Why was the trade not taken?:")
 
-        for number, reasons in enumerate(reasons, start=1):
+        for number, reasons in enumerate(reasons_list, start=1):
             print(f'{number},{reasons}')
 
         while True:
@@ -357,8 +376,9 @@ def get_entry_opportunity_data():
             try:
                 choice = int(response)
 
-                if 1 <= choice <= len(reasons):
-                    not_taken_reason = reasons[choice - 1]
+                if 1 <= choice <= len(reasons_list):
+                    not_taken_reason = reasons_list[choice - 1]
+                    print(reasons_list[choice-1])
                     break
 
                 print("Invalid choice. Please select a valid option.")
@@ -367,23 +387,23 @@ def get_entry_opportunity_data():
                 print("Invalid input. Please enter a number.")
 
         #Valid decision
-        while True:
-            print("\n Do you believe this was a valid decision")
-            print("1. Yes")
-            print("2.No")
+    while True:
+        print("\n Do you believe this was a valid decision")
+        print("1.Yes")
+        print("2.No")
 
-            response = input("Select an option:")
+        response = input("Select an option:")
 
-            if response == "1":
-                valid_entry = "VALID"
-                break
-            elif response == "2":
-                valid_entry = "INVALID"
-                break
-            else:
-                print("Invalid choice. Please select 1 or 2.")
+        if response == "1":
+            valid_entry = "VALID"
+            break
+        elif response == "2":
+            valid_entry = "INVALID"
+            break
+        else:
+            print("Invalid choice. Please select 1 or 2.")
 
-        return valid_entry, trade_direction, daily_bias, trade_action, confirmation_pattern, not_taken_reason
+    return valid_entry, trade_direction, daily_bias, trade_action, confirmation_patterns, not_taken_reason
 
 
 def get_trade_data():
@@ -392,7 +412,7 @@ def get_trade_data():
 
     #Entry time
     while True:
-        time_input=input("Enter entry time (HH:MM):").strip()
+        time_input=input("\nEnter entry time (HH:MM):").strip()
 
         try:
             time_object=datetime.strptime(time_input, "%H:%M")
@@ -412,8 +432,6 @@ def get_trade_data():
             if confirmation_timeframe:
                break
 
-
-
         print("Please enter at least one timeframe.")
 
       # What determined the trade ratio
@@ -428,7 +446,7 @@ def get_trade_data():
     trade_ratio=None
 
     while True:
-        response = input("\nEnter all applicable option numbers, separated by commas: ").strip()
+        response = input("\nSelect all applicable option numbers, separated by commas: ").strip()
         try:
            choices = [int(choice.strip()) for choice in response.split(",")]
 
@@ -445,30 +463,204 @@ def get_trade_data():
         except ValueError:
             print("invalid input Please enter numbers separated by commas.")
 
-    return entry_data,entry_time, confirmation_timeframe, trade_ratio
+    #Price information
+    entry_price = None
+    tp_price = None
+    sl_price = None
+    while True:
+        response=input("\nDO you want to enter the entry, TP and SL price? (yes/no):").strip().lower()
+
+        if response in ("yes","no"):
+            break
+        print("Please enter yes or no.")
+
+    if response== "yes":
+      while True:
+            try:
+                entry_price = float(input("Enter entry price:"))
+                tp_price = float(input('Enter TP price:'))
+                sl_price = float(input('Enter Sl price:'))
+
+                break
+
+            except ValueError:
+                    print("Please enter valid numbers.")
+
+
+    return entry_data,entry_time, confirmation_timeframe, trade_ratio,entry_price,tp_price,sl_price
+
+
+def get_trade_check_data():
+    #FOLLOW MY RULES
+    while True:
+        followed_rules=input("Did you follow your trading rules?(yes/no):").strip().lower()
+
+        if followed_rules in ("yes","no"):
+            followed_rules=followed_rules.upper()
+            break
+
+        print("invalid input. Please enter yes or no")
+
+    # SETUP SKEPTICISM
+    while True:
+        response=str(input("Were you skeptical about the trade setup? (yes/no):").strip().lower())
+
+        if response=="no":
+            setup_skepticism=None
+            break
+
+        if response=="yes":
+            while True:
+                reason=input("Why were you skeptical about the setup?:").strip().capitalize()
+
+                if reason:
+                   setup_skepticism=reason
+                   break
+
+                print("Please enter a reason ")
+
+            break
+
+        print("Invalid input. Please enter yes or no")
+
+    while True:
+        entry_timings=["ON_TIME","EALY","LATE","FOMO"]
+
+        print("\n How did you think you enter the trade?")
+        for number, timing in enumerate(entry_timings,start=1):
+            print(f'{number},{timing}')
+
+        try:
+            choice=int(input("Enter choice:").strip())
+
+            if 1<=choice<=len(entry_timings):
+                entry_timing=entry_timings[choice-1]
+                break
+            print("invalid number.")
+
+        except ValueError:
+            print("enter in a number")
+
+    return followed_rules, setup_skepticism, entry_timing
+
+def not_taken_outcome():
+    #Hypothetical trade ratio
+    while True:
+        hypothetical_trade_ratio=input("Enter the hypothetical trade ratio(e.g 1:5):").strip()
+
+        if hypothetical_trade_ratio:
+            break
+
+        print("Please enter a hypothetical trade ratio.")
+
+    #Hypothetical outcome
+    outcomes=["TP","SL"]
+
+    while True:
+        print("\nWhat would have happened to the hypothetical trade?:")
+
+        for number, outcome in enumerate(outcomes, start=1):
+            print(f'{number}, {outcome}')
+
+        try:
+            choice=int(input("Enter choice:").strip())
+
+            if 1<=choice<=len(outcomes):
+                outcome=outcomes[choice-1]
+                break
+            print("invalid option.")
+
+        except ValueError:
+            print("Invalid input. Please enter a number")
+
+    return hypothetical_trade_ratio,outcome
 
 
 
+def get_trade_outcome_data():
+    while True:
+       print("\nSelect speculated daily candle result")
+       print("1)bullish")
+       print("2)bearish")
+       try:
+         speculated_daily_candle_result=input("Enter choice:").strip()
+
+         if speculated_daily_candle_result=="1":
+             speculated_daily_candle_result="bullish"
+             break
+         elif speculated_daily_candle_result=="2":
+             speculated_daily_candle_result= "bearish"
+             break
+         else:
+             print("Invalid choice. enter 1 or 2")
+
+       except ValueError:
+           print("You can only enter in a number")
 
 
+    #OUTCOME
+    outcomes=["TP","SL", "MANUAL_CLOSE"]
 
+    while True:
+        print("\nWhat was the trade outcome?")
 
+        for number,outcomes in enumerate(outcomes, start=1):
+            print(f'{number},{outcomes}')
 
+        try:
+            choice=int(input("Enter choice:").strip())
 
+            if 1<=choice<=len(outcomes):
+                outcome=outcomes[choice-1]
+                break
 
+            print("Invalid option. Select options available.")
 
+        except ValueError:
+              print("Invalid input. Please enter a number")
 
+    #Manual close patterns
+    if outcome== "manual_close":
+        while True:
+            pattern_input = input("\n Enter the manual close pattern(s), separated by commas:").strip()
 
+            manual_close_pattern = [each_pattern.strip() for each_pattern in pattern_input.split(",") if each_pattern.strip()]
 
+            if manual_close_pattern:
+                break
+            print("Please enter at least one pattern")
+    else:
+        manual_close_pattern=None
 
+    #Maximum favorable movement
+    while True:
+        try:
+          mfm=float(input("\nEnter maximum favorable movement value:"))
 
+          if mfm:
+            break
+          print("Please enter in a value")
+        except ValueError:
+            print("Value most be a number")
 
+    #Maximum adverse movement
+    while True:
+        try:
+          mam=float(input("Enter maximum favorable movement value:").strip())
 
+          if mam:
+            break
+          print("Please enter in a value")
+        except ValueError:
+            print("Please enter a number")
 
+    return outcome,manual_close_pattern,mfm,mam,speculated_daily_candle_result
+
+# LIFECYCLE CONTROL CHOICES
 
 def get_lifecycle_action(setup_id, current_stage, next_stage):
-    print(f'Setup_id: {setup_id}')
-    print(f'Current stage:{current_stage}')
+    print(f'\nSetup_id: {setup_id}')
+    print(f'Current stage:{current_stage.value}')
 
     if next_stage is None:
         print("Next stage: Lifecycle completed")
@@ -484,7 +676,7 @@ def get_lifecycle_action(setup_id, current_stage, next_stage):
             print("invalid input")
 
 
-    print(f'Next stages: {next_stage}')
+    print(f'Next stages: {next_stage.value}')
     print(f'What would you like to do?')
     print('1. Move to next the stage')
     print("2. End program")
@@ -526,7 +718,7 @@ def get_user_level_choice(key_zones):
         print(f'level ID:{level[0]} |'
               f'Date:{level[3]} |'
               f'Timeframe:{level[4]} |'
-              f'Type:{level[6]} |'
+              f'Type:{level[5]} |'
               f'Session {level[2]}'
               )
 
@@ -548,8 +740,9 @@ def get_user_level_choice(key_zones):
     return None
 
 
-
 def display_error(error):
     print(f'Error:{error}')
 
 
+if __name__ == "__main__":
+    print(get_entry_opportunity_data())

@@ -45,17 +45,42 @@ class EntryOpportunity:
         self.trade_direction=trade_direction
         self.daily_bias= daily_bias
         self.trade_action=trade_action
-        self.confirmation_pattern=confirmation_pattern
+        self.confirmation_patterns=confirmation_pattern
         self.not_taken_reason=not_taken_reason
 
 class  TRADE:
-    def __init__(self,date,time,time_frame,trade_ratio):
+    def __init__(self,opportunity_id,date,time,time_frame,trade_ratio,entry_value,tp_value,sl_value):
+        self.opportunity_id=opportunity_id
         self.entry_date=date
         self.time=time
         self.confirmation_timeframe=time_frame
         self.trade_ratio=trade_ratio
+        self.entry_value=entry_value
+        self.tp_value=tp_value
+        self.sl_value=sl_value
 
-#class TradeChecks:
+
+class TradeChecks:
+    def __init__(self,trade_id,followed_rules,setup_skepticism,entry_timing):
+        self.trade_id=trade_id
+        self.followed_rules=followed_rules
+        self.setup_skepticism=setup_skepticism
+        self.entry_timing = entry_timing
+
+class TradeOUTCOME:
+    def __init__(self,trade_id,outcome,manual_close_pattern,mfm,mam,daily_candle_result):
+        self.trade_id=trade_id
+        self.outcome=outcome
+        self.manual_close_pattern=manual_close_pattern
+        self.maximum_favorable_movement=mfm
+        self.maximum_adverse_movement=mam
+        self.daily_candle_result=daily_candle_result
+
+class NoTradeOutcome:
+    def __init__(self,opportunity_id,outcome,trade_ratio):
+        self.opportunity_id=opportunity_id
+        self.hypothetical_trade_ratio=trade_ratio
+        self.outcome=outcome
 
 
 

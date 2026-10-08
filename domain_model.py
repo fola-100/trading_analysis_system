@@ -6,6 +6,8 @@ class SystemState(Enum):
     LEVEL_INTERACTION="level_interaction"
     ENTRY_OPPORTUNITY= "entry_opportunity"
     TRADE= "trade"
+    TRADE_CHECKS= "trade_checks"
+    NOT_TAKEN_OUTCOME= "not_taken_outcome"
     TRADE_OUTCOME="trade_outcome"
 
 class Actions(Enum):
