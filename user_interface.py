@@ -167,6 +167,16 @@ def get_level_data():
 
         criteria_list = re.split(r",\s*", criteria_input)
 
+        if not criteria_input.strip() or any(not item for item in criteria_list):
+            print("\n Invalid input. Please enter criteria separated by commas.")
+            continue
+
+        if len(criteria_list) != len(set(criteria_list)):
+            print("\n Duplicate criteria detected.")
+            print("Please enter each criteria only once")
+            continue
+
+
         invalid_criteria = []
 
         for criterion in criteria_list:
@@ -340,13 +350,18 @@ def get_entry_opportunity_data():
         while True:
             user_response = input("Select pattern(s). Separate multiple choices with commas: ")
 
+            # Check that at least one choice was entered
+            if not user_response.strip():
+                print("Invalid choice. Please select at least one choice.")
+                continue
+
             try:
                 selected_choices=[ int(choice.strip()) for choice in user_response.split(",") ]
 
-                # Check that at least one choice was entered
-                if not selected_choices:
-                  print("Invalid choice. Please select at least one choice.")
-                  continue
+                if len(selected_choices)!= len(set(selected_choices)):
+                    print("\n Duplicate criteria detected.")
+                    print("Please enter each pattern number only once")
+                    continue
 
                 # Check that every number is a valid option
                 if not all( 1 <= choice <= len(patterns) for choice in selected_choices ):
@@ -359,7 +374,7 @@ def get_entry_opportunity_data():
                 break
 
             except ValueError:
-                print("Selected input must be a number.")
+                print("Selected input must be a number seprated by comma.")
 
     else:
         reasons_list=["No confirmation","Missed entry", "Hesitation", "Fear","Didn't see  it",
@@ -372,6 +387,15 @@ def get_entry_opportunity_data():
 
         while True:
             response = input("Select a reason: ").strip()
+
+            if not response.strip():
+                print("Invalid choice. Please select at least one choice.")
+                continue
+
+            if len(response) != len(set(response)):
+                print("\n Duplicate criteria detected.")
+                print("Please enter each pattern number only once")
+                continue
 
             try:
                 choice = int(response)
@@ -452,6 +476,11 @@ def get_trade_data():
 
            if not choices:
                print("Please select at least one option.")
+               continue
+
+           if len(choices) != len(set(choices)):
+               print("\n Duplicate criteria detected.")
+               print("Please enter each pattern number only once")
                continue
 
            if all(1 <= choice <= len(ratio_options) for choice in choices):
@@ -745,4 +774,4 @@ def display_error(error):
 
 
 if __name__ == "__main__":
-    print(get_entry_opportunity_data())
+    print(get_trade_data())
