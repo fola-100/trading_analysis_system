@@ -1,6 +1,6 @@
 import re
 from domain_model import Actions
-from datetime import datetime
+from datetime import datetime,date
 
 def get_user_action():
     while True:
@@ -15,7 +15,7 @@ def get_user_action():
             return Actions.CREATE_SETUP
 
         elif choice== "2":
-            return Actions.UPDATE_SETUP
+            return Actions.UPDATE_LIFECYCLE
 
         elif choice=="3":
             return Actions.ANALYZE
@@ -23,8 +23,79 @@ def get_user_action():
         else:
             print("invalid choice")
 
+def get_setup_selected_action():
+    while True:
+        print("\n How would you like to select a setup?")
+        print("1.Enter a setup ID")
+        print("2.Continue with the last saved setup")
+        print("3.View all saved setups")
+        print("4.Enter by setup date")
+        print("5.Return to the main menu")
+
+        choice=input("\nEnter your choice:").strip()
+
+        if choice=="1":
+            return Actions.INPUT_SETUP_ID
+
+        elif choice=="2":
+            return Actions.GET_LAST_SETUP_ID
+
+        elif choice=="3":
+            return Actions.GET_ALL_SETUP_IDS
+
+        elif choice=="4":
+            return Actions.GET_SETUP_ID_BY_DATE
+
+        elif choice=="5":
+            return Actions.MENU
+
+        else:
+            print("\nInvalid choice. Please enter a valid option.")
+
+
+
+#SETUP ID COLLECTION
+def get_setup_id():
+    while True:
+        user_input=input("\nEnter the setup ID:").strip()
+
+        if not user_input:
+            print("Setup ID cannot be empty")
+            continue
+
+        try:
+            setup_id=int(user_input)
+
+        except ValueError:
+            print("Invalid input. Please enter a whole number.")
+            continue
+
+        #Check that the ID is positive
+
+        if setup_id <=0:
+            print("Setup ID must be greater than 0.")
+            continue
+
+        return setup_id
+
 # DATA COLLECTION
 def get_setup_data():
+   while True:
+       print("\nSELECT TEST METHOD")
+       print("1)Backtest(historical market data)")
+       print("2)Forward testing(live market)")
+
+       testing_choice=input(">:").strip()
+
+       if testing_choice== "1":
+           testing_mode="backtesting"
+           break
+       elif testing_choice== "2":
+           testing_mode="forward_testing"
+           break
+       else:
+           print("Invalid choice.PLS enter 1 or 2.")
+
    while True:
        print("\n CHOOSE STRATEGY BEEN USED ")
        print('1) Supply and demand')
@@ -68,7 +139,7 @@ def get_setup_data():
       else:
           break
 
-   return strategy,market_pair,long_htf_direction,short_htf_direction,mkt_condition,candle_bias
+   return strategy,market_pair,long_htf_direction,short_htf_direction,mkt_condition,candle_bias,testing_mode
 
 def get_date():
     while True:
@@ -225,6 +296,7 @@ def get_level_data():
         else:
             print("Invalid choice. Please enter 1 or 2.")
 
+    print("Enter data when level was created")
     date=get_date()
 
 
@@ -767,6 +839,56 @@ def get_user_level_choice(key_zones):
         print("Level ID entered does not belong to this setup")
 
     return None
+
+def confirm_last_saved_setup(last_saved_setup):
+    print(f'setup_id: {last_saved_setup[0]} |strategy: {last_saved_setup[1]}|'
+          f' market_pair: {last_saved_setup[2]} |date_created: {last_saved_setup[3]}')
+
+    print(f'Continue with this setup? (y/n)')
+
+    while True:
+       response = input(">:").strip().lower()
+
+       if response== "yes":
+        return Actions.CONTINUE
+
+       elif response== "no":
+           return Actions.MENU
+
+       else:
+           print("invalid input.Enter only yes or no")
+
+def select_saved_setup(setups_list):
+    for setup_info in setups_list:
+        setup_id,testing_mode, strategy, market_pair, date_created = setup_info
+        print(f'\nSetup ID:{setup_id} |Testing Mode:{testing_mode} | strategy{strategy} |'
+              f'market_pair{market_pair} | date_created{date_created}')
+
+    while True:
+        user_input= input("\nEnter the Setup ID you want to work on"
+                              "(or type menu to return):").strip().lower()
+
+        if user_input == "menu":
+            return Actions.MENU
+
+        try:
+            selected_setup_id=int(user_input)
+        except ValueError:
+            print("invalid input. Please enter a numeric Setup ID or menu.")
+            continue
+
+        for setup_info in setups_list:
+            if setup_info[0] == selected_setup_id:
+                return selected_setup_id
+
+        print("Setup ID not found in the setup_id option.Please select a valid Setup ID.")
+
+
+
+
+
+
+
 
 
 def display_error(error):

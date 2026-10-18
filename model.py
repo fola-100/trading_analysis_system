@@ -1,5 +1,6 @@
 class Setup:
-    def __init__(self, strategy, market_pair, long_htf_direction, short_htf_direction, market_condition, candle_bias, date):
+    def __init__(self, strategy, market_pair, long_htf_direction, short_htf_direction, market_condition,
+                 candle_bias,testing_mode, date):
         #CHECKING DATA ENTER
         if strategy not in ["supply and demand","return-to-origin-reversal"]:
             raise ValueError("Value enter is not part of strategy available")
@@ -18,6 +19,7 @@ class Setup:
         self.htf_next_three_candle=candle_bias
         self.market_condition=market_condition
         self.date_created=date
+        self.testing_mode=testing_mode
 
 
 class Level:

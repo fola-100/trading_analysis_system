@@ -13,8 +13,13 @@ class SystemState(Enum):
 class Actions(Enum):
     #TOP LEVEL APPLICATION ACTIONS
     CREATE_SETUP="Create Setup"
-    UPDATE_SETUP="update_setup"
+    UPDATE_LIFECYCLE= "update_lifecycle"
     ANALYZE="analyze_data"
+    GET_LAST_SETUP_ID= "get_last_setup_id"
+    GET_ALL_SETUP_IDS= "get_all_setup_ids"
+    INPUT_SETUP_ID= "input_setup_id"
+    GET_SETUP_ID_BY_DATE="find_setup_id_by_date"
+
 
     # LIFECYCLE ACTION
     CONTINUE="continue"

@@ -7,14 +7,14 @@ cur=connection.cursor()
 
 def create_setup_table():
    # CREATING DATA TABLE
-   cur.execute("CREATE TABLE IF NOT EXISTS Setup(setup_id INTEGER PRIMARY KEY,strategy TEXT, market_pair TEXT, long_htf_direction TEXT,"
+   cur.execute("CREATE TABLE IF NOT EXISTS Setup(setup_id INTEGER PRIMARY KEY,strategy TEXT,testing_mode TEXT, market_pair TEXT, long_htf_direction TEXT,"
                "short_htf_direction TEXT,mkt_condition TEXT, candle_bias TEXT,date_created TEXT)")
 
 def set_value(setup):
    #ADDING VALUE INTO DATA TABLE
-   cur.execute("INSERT INTO Setup(strategy,market_pair,long_htf_direction,short_htf_direction,mkt_condition,candle_bias,date_created)"
-               "VALUES(?,?,?,?,?,?,?)",
-               (setup.trade_strategy, setup.market_pair,
+   cur.execute("INSERT INTO Setup(strategy,testing_mode,market_pair,long_htf_direction,short_htf_direction,mkt_condition,candle_bias,date_created)"
+               "VALUES(?,?,?,?,?,?,?,?)",
+               (setup.trade_strategy, setup.testing_mode, setup.market_pair,
                 setup.long_htf_direction,setup.short_htf_direction, setup.market_condition, setup.htf_next_three_candle, setup.date_created))
 
    connection.commit()
@@ -154,6 +154,27 @@ def trade_outcome_value(data):
 
     connection.commit()
     return cur.lastrowid
+
+def get_last_setup_saved():
+    cur.execute("SELECT setup_id,strategy,market_pair,date_created FROM SETUP ORDER BY setup_id DESC LIMIT 1")
+    result=cur.fetchone()
+    return result
+
+def get_all_setup_saved():
+    cur.execute("SELECT setup_id,testing_mode, strategy, market_pair, date_created FROM SETUP ")
+    result = cur.fetchall()
+    return result
+
+def get_all_setup_date():
+    cur.execute("SELECT setup_id,date_created FROM SETUP ORDER BY date_created DESC, setup_id DESC; ")#
+    result=cur.fetchall()
+    return result
+
+def get_setup_by_id(setup_id):
+    cur.execute("SELECT setup_id,testing_mode,strategy, market_pair, date_created FROM SETUP WHERE setup_id=?",(setup_id,))
+    result=cur.fetchone()
+    return result
+
 
 def get_levels(setup_id):
     cur.execute("SELECT level_id, setup_id, session_created, date_created, timeframe,level_type"

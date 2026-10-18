@@ -69,7 +69,6 @@ def build_trade_outcome(trade_id):
     gate_way.build_trade_outcome(trade_outcome)
 
 
-
 def search_setup_status(setup_id):
     setup_id_response = gate_way.has_setup(setup_id)
     level_response = gate_way.has_level(setup_id)
@@ -256,6 +255,40 @@ def action_lifecycle(action):
     return None
 
 
+def run_setup_lifecycle(setup_id):
+    while True:
+        response = search_setup_status(setup_id)
+        if response == SystemState.LEVEL:
+            levels = get_levels_created(setup_id)
+            user_response = ui.get_level_creation_choice(levels)
+
+            if user_response:
+                create_new_level(setup_id)
+                continue
+            else:
+                break
+        else:
+            break
+
+    levels_id = None
+
+    while True:
+        current_state, next_state, level_id = determine_current_and_next_state(setup_id, levels_id)
+
+        levels_id = level_id
+
+        user_next_action = ui.get_lifecycle_action(setup_id, current_state, next_state)
+
+        if user_next_action == Actions.END:
+            sys.exit()
+
+        elif user_next_action == Actions.MENU:
+            break
+
+        elif user_next_action == Actions.CONTINUE:
+            continue_lifecycle(setup_id, level_id, next_state)
+
+
 def start_application():
 
     while True:
@@ -270,39 +303,113 @@ def start_application():
               continue
 
           setup_id = result
+          run_setup_lifecycle(setup_id)
 
 
-          while True:
-              response=search_setup_status(setup_id)
-              if response == SystemState.LEVEL:
-                  levels = get_levels_created(setup_id)
-                  user_response = ui.get_level_creation_choice(levels)
+      elif action== Actions.UPDATE_LIFECYCLE:
+          response = ui.get_setup_selected_action()
 
-                  if user_response:
-                      create_new_level(setup_id)
+
+          if response == Actions.INPUT_SETUP_ID:
+              while True:
+                  inputted_setup_id = ui.get_setup_id()
+                  result = gate_way.has_setup(inputted_setup_id)
+
+                  if not result:
+                      error_message = "ID enter does not exist"
+                      ui.display_error(error_message)
                       continue
-                  else:
-                      break
+
+                  run_setup_lifecycle(inputted_setup_id)
+                  break
+
+          elif response == Actions.GET_LAST_SETUP_ID:
+              last_saved_setup = gate_way.get_last_setup_saved()
+
+              if last_saved_setup is None:
+                  error_message = "No setup found. create a new setup"
+                  ui.display_error(error_message)
+
               else:
-                  break
+                  user_response = ui.confirm_last_saved_setup(last_saved_setup)
 
-          levels_id=None
+                  if user_response == Actions.CONTINUE:
+                      setup_id = last_saved_setup[0]
+                      run_setup_lifecycle(setup_id)
 
-          while True:
-              current_state, next_state,level_id = determine_current_and_next_state(setup_id,levels_id)
+                  elif user_response == Actions.MENU:
+                      continue
 
-              levels_id=level_id
+          elif response==Actions.GET_ALL_SETUP_IDS:
+              saved_setups=gate_way.get_all_setup_saved()
 
-              user_next_action = ui.get_lifecycle_action(setup_id,current_state,next_state)
+              if not saved_setups:
+                error_message = "No setup found. create a new setup"
+                ui.display_error(error_message)
+                continue
 
-              if user_next_action == Actions.END:
-                  sys.exit()
+              selected_setup=ui.select_saved_setup(saved_setups)
 
-              elif user_next_action == Actions.MENU:
-                  break
+              if selected_setup== Actions.MENU:
+                   continue
 
-              elif user_next_action == Actions.CONTINUE:
-                  continue_lifecycle(setup_id,level_id,next_state)
+              run_setup_lifecycle(selected_setup)
+
+
+          elif response== Actions.GET_SETUP_ID_BY_DATE:
+              inputted_date=ui.get_date()
+              setup_dates=gate_way.get_all_setup_date()
+
+              matching_setup_ids=[]
+              setup_ids_info=[]
+
+
+              for setup in setup_dates:
+                  setup_id, date_created=setup
+
+                  if inputted_date == date_created:
+                      matching_setup_ids.append(setup_id)
+
+              if matching_setup_ids:
+                 for each_setup_id in matching_setup_ids:
+                     setup_info=gate_way.get_setup_by_id(each_setup_id)
+                     setup_ids_info.append(setup_info)
+
+                 selected_setup = ui.select_saved_setup(setup_ids_info)
+
+                 if selected_setup == Actions.MENU:
+                     continue
+
+                 run_setup_lifecycle(selected_setup)
+
+              else:
+                  ui.display_error("No match found.")
+                  continue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
