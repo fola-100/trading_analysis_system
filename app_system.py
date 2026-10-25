@@ -33,10 +33,10 @@ def build_level_interaction(level_id):
 
     gate_way.key_level_interaction_setup(level_interaction)
 
-def build_entry_opportunity(level_interaction_id):
+def build_entry_opportunity(level_interaction_id,level_id):
     opportunity_data= ui.get_entry_opportunity_data()
 
-    entry_opportunity=EntryOpportunity(level_interaction_id,*opportunity_data)
+    entry_opportunity=EntryOpportunity(level_id,level_interaction_id,*opportunity_data)
 
     gate_way.entry_opportunity_setup(entry_opportunity)
 
@@ -84,7 +84,7 @@ def search_setup_status(setup_id):
 def determine_level_state(level_id):
 
      level_interaction_response= gate_way.has_level_interaction(level_id)
-     entry_opportunity_response= gate_way.has_entry_opportunity(level_id)
+     entry_opportunity_response= gate_way.get_entry_opportunity(level_id)
      trade_response=gate_way.has_trade(level_id)
      trade_outcome_response=gate_way.has_trade_outcome(level_id)
      trade_check_response=gate_way.has_trade_check(level_id)
@@ -140,14 +140,33 @@ def next_setup_stage(current_stage):
 
 def determine_current_and_next_state(setup_id,levels_id=None):
     response = search_setup_status(setup_id)
-    if response == SystemState.LEVEL:
+
+    if response == SystemState.SETUP:
+        current_state = SystemState.SETUP
+        next_state = next_setup_stage(current_state)
+
+        return current_state, next_state, None
+
+    elif response == SystemState.LEVEL:
         if levels_id is None:
           levels = get_levels_created(setup_id)
           levels_id = ui.get_user_level_choice(levels)
 
         current_state = determine_level_state(levels_id)
 
-        if current_state==SystemState.ENTRY_OPPORTUNITY:
+        if current_state==SystemState.LEVEL:
+            strategy=gate_way.get_strategy_in_setup(setup_id)
+
+            if strategy is None:
+                ui.display_error("No strategy found in setup ID")
+
+            if strategy=="return-to-origin-reversal":
+                next_state=SystemState.ENTRY_OPPORTUNITY
+
+            else:
+                next_state = next_setup_stage(current_state)
+
+        elif current_state==SystemState.ENTRY_OPPORTUNITY:
             trade_action=gate_way.get_trade_action(levels_id)
 
             if trade_action == "NOT_TAKEN":
@@ -159,14 +178,10 @@ def determine_current_and_next_state(setup_id,levels_id=None):
         else:
             next_state = next_setup_stage(current_state)
 
+
         return current_state, next_state, levels_id
 
 
-    elif response== SystemState.SETUP:
-        current_state=SystemState.SETUP
-        next_state= next_setup_stage(current_state)
-
-        return current_state, next_state, None
 
     return None
 
@@ -177,19 +192,18 @@ def get_levels_created(setup_id):
 
 def create_new_level(setup_id):
     build_level(setup_id)
-    return None
 
 #HELP FUNCTIONS
 def get_level_interaction_or_stop(level_id):
     level_interaction_id=gate_way.get_level_interact_id(level_id)
 
     if level_interaction_id is None:
-        ui.display_error(f'Level_interaction as not been created yet.')
         return None
+
     return level_interaction_id
 
-def get_opportunity_or_stop(level_interaction_id):
-    opportunity_id = gate_way.get_entry_opportunity(level_interaction_id)
+def get_opportunity_or_stop(level_id):
+    opportunity_id = gate_way.get_entry_opportunity(level_id)
     if opportunity_id is None:
         ui.display_error(f'Entry_opportunity as not been created yet')
         return None
@@ -211,29 +225,27 @@ def continue_lifecycle(setup_id, level_id, next_stage):
 
     elif next_stage == SystemState.ENTRY_OPPORTUNITY:
        level_interaction_id=get_level_interaction_or_stop(level_id)
-       build_entry_opportunity(level_interaction_id)
+       build_entry_opportunity(level_interaction_id,level_id)
 
     elif next_stage== SystemState.TRADE:
-        level_interaction_id = get_level_interaction_or_stop(level_id)
-        opportunity_id=get_opportunity_or_stop(level_interaction_id)
+        opportunity_id=get_opportunity_or_stop(level_id)
+        if opportunity_id is None:
+            return None
         build_trade(opportunity_id)
 
     elif next_stage== SystemState.TRADE_CHECKS:
-        level_interaction_id = get_level_interaction_or_stop(level_id)
-        opportunity_id = get_opportunity_or_stop(level_interaction_id)
+        opportunity_id = get_opportunity_or_stop(level_id)
         trade_id=get_trade_or_stop(opportunity_id)
         if trade_id is None:
             return None
         build_trade_check(trade_id)
 
     elif next_stage== SystemState.NOT_TAKEN_OUTCOME :
-        level_interaction_id = get_level_interaction_or_stop(level_id)
-        opportunity_id = get_opportunity_or_stop(level_interaction_id)
+        opportunity_id = get_opportunity_or_stop(level_id)
         build_not_taken_outcome(opportunity_id)
 
     elif next_stage == SystemState.TRADE_OUTCOME :
-        level_interaction_id = get_level_interaction_or_stop(level_id)
-        opportunity_id = get_opportunity_or_stop(level_interaction_id)
+        opportunity_id = get_opportunity_or_stop(level_id)
         trade_id = get_trade_or_stop(opportunity_id)
         if trade_id is None:
             return None

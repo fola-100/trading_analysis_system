@@ -43,7 +43,6 @@ def level_criteria_value(level_id,criteria):
     connection.commit()
 
 
-
 def create_level_interaction():
     cur.execute("CREATE TABLE IF NOT EXISTS Level_interaction(level_interaction_id INTEGER PRIMARY KEY, level_id INTEGER NOT NULL UNIQUE,"
                 "date_price_reach Text, session Text,interaction_on_level Text, FOREIGN KEY (level_id) REFERENCES Level(level_id))")
@@ -56,13 +55,15 @@ def level_interaction_value(data):
     return cur.lastrowid
 
 def create_entry_opportunity():
-    cur.execute("CREATE TABLE IF NOT EXISTS EntryOpportunity(opportunity_id INTEGER PRIMARY KEY,level_interaction_id INTEGER NOT NULL UNIQUE,"
+    cur.execute("CREATE TABLE IF NOT EXISTS EntryOpportunity(opportunity_id INTEGER PRIMARY KEY,level_id INTEGER NOT NULL,level_interaction_id INTEGER UNIQUE,"
                 " valid_entry TEXT, trade_direction TEXT, daily_bias TEXT, trade_action TEXT, not_taken_reason TEXT,"
-                " FOREIGN KEY (level_interaction_id) REFERENCES Level_interaction(level_interaction_id))")
+                " FOREIGN KEY (level_interaction_id) REFERENCES Level_interaction(level_interaction_id),"
+                " FOREIGN KEY (level_id) REFERENCES Level(level_id))")
+
 
 def entry_opportunity_value(data):
-    cur.execute("INSERT INTO EntryOpportunity(level_interaction_id, valid_entry, trade_direction, daily_bias, trade_action,"
-                " not_taken_reason)VALUES(?,?,?,?,?,?)",(data.level_interaction_id,data.valid_entry,data.trade_direction,
+    cur.execute("INSERT INTO EntryOpportunity(level_id,level_interaction_id, valid_entry, trade_direction, daily_bias, trade_action,"
+                " not_taken_reason)VALUES(?,?,?,?,?,?,?)",(data.level_id,data.level_interaction_id,data.valid_entry,data.trade_direction,
                  data.daily_bias,data.trade_action,  data.not_taken_reason))
 
     connection.commit()
@@ -175,6 +176,13 @@ def get_setup_by_id(setup_id):
     result=cur.fetchone()
     return result
 
+def get_strategy_in_setup(setup_id):
+    cur.execute("SELECT strategy FROM SETUP WHERE setup_id=? ",(setup_id,))
+    result=cur.fetchone()
+    if result is None:
+        return None
+
+    return result[0]
 
 def get_levels(setup_id):
     cur.execute("SELECT level_id, setup_id, session_created, date_created, timeframe,level_type"
@@ -197,41 +205,40 @@ def has_level_interaction(level_id):
     result=cur.fetchone()
     return result is not None
 
-def has_entry_opportunity(level_id):
-    cur.execute("SELECT 1 FROM LEVEL_INTERACTION li JOIN EntryOpportunity eo"
-                " ON eo.level_interaction_id= li.level_interaction_id WHERE level_id=? LIMIT 1",(level_id,))
+def get_entry_opportunity(level_id):
+    cur.execute("SELECT 1 FROM EntryOpportunity WHERE level_id=? LIMIT 1",(level_id,))
 
     result=cur.fetchone()
-    return result is not None
+    if result is None:
+      return None
+
+    return result[0]
+
 
 def has_trade(level_id):
-    cur.execute("SELECT 1 FROM LEVEL_INTERACTION li JOIN EntryOpportunity eo"
-                " ON eo.level_interaction_id=li.level_interaction_id JOIN TRADE t "
-                "ON t.opportunity_id = eo.opportunity_id WHERE level_id=? LIMIT 1",(level_id,))
+    cur.execute("SELECT 1 FROM EntryOpportunity eo JOIN TRADE t ON t.opportunity_id=eo.opportunity_id"
+                " WHERE level_id=? LIMIT 1",(level_id,))
 
     result=cur.fetchone()
     return result is not None
 
 def has_trade_check(level_id):
-    cur.execute("SELECT 1 FROM LEVEL_INTERACTION li JOIN ENTRYOPPORTUNITY eo "
-                "ON eo.level_interaction_id=li.level_interaction_id JOIN TRADE t "
-                "ON t.opportunity_id=eo.opportunity_id JOIN TRADE_CHECK tc "
-                "ON tc.trade_id= t.trade_id WHERE li.level_id=? LIMIT 1",(level_id,))
+    cur.execute("SELECT 1 FROM EntryOpportunity eo JOIN Trade t ON t.opportunity_id=eo.opportunity_id"
+                " JOIN TRADE_CHECK tc ON tc.trade_id= t.trade_id WHERE level_id=? LIMIT 1",(level_id,))
 
     result=cur.fetchone()
     return result is not None
 
 def has_trade_outcome(level_id):
-    cur.execute("SELECT 1 FROM LEVEL_INTERACTION li JOIN EntryOpportunity eo"
-                " ON eo.level_interaction_id=li.level_interaction_id JOIN TRADE t ON t.opportunity_id=eo.opportunity_id"
-                " JOIN TRADE_OUTCOME ot ON t.trade_id = ot.trade_id WHERE li.level_id=? LIMIT 1",(level_id,))
+    cur.execute("SELECT 1 FROM EntryOpportunity eo JOIN Trade t ON t.opportunity_id=eo.opportunity_id"
+                " JOIN TRADE_OUTCOME ot ON t.trade_id= ot.trade_id WHERE level_id=? LIMIT 1",(level_id,))
+
     result=cur.fetchone()
     return result is not None
 
 def has_not_taken_outcome(level_id):
-    cur.execute("SELECT 1 FROM LEVEL_INTERACTION li JOIN EntryOpportunity eo"
-                " ON eo.level_interaction_id=li.level_interaction_id JOIN Not_taken_outcome nto "
-                " ON nto.opportunity_id=eo.opportunity_id WHERE li.level_id=? LIMIT 1",(level_id,))
+    cur.execute("SELECT 1 FROM EntryOpportunity eo JOIN Trade t ON t.opportunity_id=eo.opportunity_id"
+                " JOIN Not_taken_outcome nto ON nto.opportunity_id= eo.opportunity_id WHERE eo.level_id=? LIMIT 1 ",(level_id,))
 
     result=cur.fetchone()
     return result is not None
@@ -245,8 +252,8 @@ def get_level_interact_id(level_id):
 
     return result[0]
 
-def get_entry_opportunity(level_interact_id):
-    cur.execute("SELECT opportunity_id FROM EntryOpportunity WHERE level_interaction_id=?",(level_interact_id,))
+def get_entry_opportunity(level_id):
+    cur.execute("SELECT opportunity_id FROM EntryOpportunity WHERE level_id=?",(level_id,))
     result=cur.fetchone()
 
     if result is None:

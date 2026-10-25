@@ -747,7 +747,7 @@ def get_trade_outcome_data():
     #Maximum adverse movement
     while True:
         try:
-          mam=float(input("Enter maximum favorable movement value:").strip())
+          mam=float(input("Enter maximum adverse movement value:").strip())
 
           if mam:
             break
@@ -896,4 +896,4 @@ def display_error(error):
 
 
 if __name__ == "__main__":
-    print(get_trade_data())
+    print(get_entry_opportunity_data())

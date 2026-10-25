@@ -39,15 +39,15 @@ class LevelInteraction:
         self.interaction_on_level=price_movement
 
 class EntryOpportunity:
-    def __init__(self,level_interaction_id, valid_entry,trade_direction,daily_bias,
-                 trade_action, confirmation_pattern, not_taken_reason):
-
+    def __init__(self,level_id,level_interaction_id, valid_entry,trade_direction,daily_bias,
+                 trade_action, confirmation_patterns, not_taken_reason):
+        self.level_id= level_id
         self.level_interaction_id=level_interaction_id
         self.valid_entry= valid_entry
         self.trade_direction=trade_direction
         self.daily_bias= daily_bias
         self.trade_action=trade_action
-        self.confirmation_patterns=confirmation_pattern
+        self.confirmation_patterns=confirmation_patterns
         self.not_taken_reason=not_taken_reason
 
 class  TRADE:
